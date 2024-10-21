@@ -5,6 +5,8 @@ from pydub import AudioSegment
 from google.cloud import speech_v1p1beta1 as speech
 from google.cloud.speech_v1p1beta1 import types
 from google.cloud import texttospeech
+import requests
+import openai
 from gtts import gTTS
 from moviepy.editor import *
 
@@ -72,7 +74,41 @@ def main():
         st.text(transcribed_text)
 
         # Generate AI-enhanced text using GPT-4 (Replace with your GPT-4 implementation)
-        enhanced_text = "Enhanced text using GPT-4"  # Replace with your implementation
+        # enhanced_text = "Enhanced text using GPT-4"  # Replace with your implementation
+        azure_openai_key = os.getenv('AI_API_KEY')
+        azure_openai_endpoint = os.getenv('AI_ENDPOINT')
+        try:
+            headers = {
+                "Content-Type": "application/json",  # Specifies that we are sending JSON data
+                "api-key": azure_openai_key  # The API key for authentication
+            }
+            # Data to be sent to Azure OpenAI
+            # Define the payload, which includes the message prompt and token limit.
+            # **** This is where you can customize the message prompt and token limit. ****
+            data = {
+                "messages": [{"role": "user", "content": f"Enhance the transcription {transcribed_text} and add pauses at the pace of distractors like humming and other."}], 
+                # The message we want the model to respond to
+                # "prompt" : [
+                    # "Tell me a joke."
+                # ],
+                "max_tokens": 5000  # Limit the response length
+            }
+            # Making the POST request to the Azure OpenAI endpoint
+            # Send the request to the Azure OpenAI endpoint using the defined headers and data.
+            enhanced_text = requests.post(azure_openai_endpoint, headers=headers, json=data)
+            # Check if the request was successful
+            # Handle the response, checking the status and displaying the result.
+            if enhanced_text.status_code == 200:
+                result = enhanced_text.json()  # Parse the JSON response
+                st.success(result["choices"][0]["message"]["content"].strip())  # Display the response content from the AI
+                return True           
+
+            else:
+                # Handle errors if the request was not successful
+                st.error(f"Failed to connect or retrieve response: {enhanced_text.status_code} - {enhanced_text.text}")
+        except Exception as e:
+            # Handle any exceptions that occur during the request
+            st.error(f"Failed to connect or retrieve response: {str(e)}")
 
         # Display the enhanced text
         st.write("AI-Enhanced Text:")

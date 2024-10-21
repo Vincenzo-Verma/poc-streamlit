@@ -2,14 +2,15 @@ import streamlit as st
 import speech_recognition as sr
 import openai
 import pyttsx3
-import moviepy.editor as mp
-from dotenv import load_dotenv
+from moviepy.editor import VideoFileClip, AudioFileClip
+# from dotenv import load_dotenv
 import os
-load_dotenv()
+# load_dotenv()
 
 
 # Set OpenAI API key
-openai.api_key = os.getenv("OPENAI_API_KEY")
+# openai.api_key = os.getenv("OPENAI_API_KEY")
+openai.api_key = '22ec84421ec24230a3638d1b51e3a7dc'
 
 # Define Streamlit app
 def main():
@@ -20,7 +21,7 @@ def main():
 
     if uploaded_file is not None:
         # Load video and extract audio
-        video = mp.VideoFileClip(uploaded_file)
+        video = VideoFileClip(uploaded_file)
         audio = video.audio
 
         # Transcribe audio using Google Speech-to-Text
@@ -56,7 +57,7 @@ def main():
         engine.runAndWait()
 
         # Replace original audio with AI-generated audio
-        new_audio = mp.AudioFileClip("generated_audio.mp3")
+        new_audio = AudioFileClip("generated_audio.mp3")
         video.audio = new_audio
         video.write_videofile("output_video.mp4")
 
